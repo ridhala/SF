@@ -82,6 +82,7 @@ use function Symfony\Component\String\u;
 
 
 
+
 class VinylController extends AbstractController
 {
     #[Route('/', name: 'app_homepage')]

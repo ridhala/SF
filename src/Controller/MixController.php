@@ -10,9 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 
 class MixController extends AbstractController
-  
 {
-    #[Route('/mix/new')]
     #[Route('/mix/new')]
     public function new(EntityManagerInterface $entityManager): Response
     {
@@ -31,28 +29,6 @@ class MixController extends AbstractController
             $mix->getTrackCount()
         ));
     }
-
-   
-
-
-    #[Route('/mix/{id}/vote', name: 'app_mix_vote', methods: ['POST'])]
-    public function vote(VinylMix $mix, Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $direction = $request->request->get('direction', 'up');
-        if ($direction === 'up') {
-            $mix->setVotes($mix->getVotes() + 1);
-        } else {
-            $mix->setVotes($mix->getVotes() - 1);
-        }
-        $entityManager->flush();
-        return $this->redirectToRoute('app_mix_show', [
-            'id' => $mix->getId(),
-        ]);
-    }
-}
-    }
-      
-    }
     #[Route('/mix/{id}', name: 'app_mix_show')]
     public function show($id, VinylMixRepository $mixRepository): Response
     {
@@ -64,6 +40,25 @@ class MixController extends AbstractController
             'mix' => $mix,
         ]);
     }
+    #[Route('/mix/{id}/vote', name: 'app_mix_vote', methods: ['POST'])]
+    public function vote(VinylMix $mix, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $direction = $request->request->get('direction', 'up');
+        if ($direction === 'up') {
+            $mix->upVote();
+        } else {
+            $mix->downVote();
+        }
+        $entityManager->flush();
+        $this->addFlash('success', 'Vote counted!');
+        return $this->redirectToRoute('app_mix_show', [
+            'id' => $mix->getId(),
+        ]);
+    }
+}
+      
+    }
+   
 }
 
 class VinylMixRepository extends ServiceEntityRepository
