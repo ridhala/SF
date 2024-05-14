@@ -6,7 +6,59 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 class MixController extends AbstractController
+
+
+    class MixController extends AbstractController
 {
+    #[Route('/mix/new')]
+    public function new(EntityManagerInterface $entityManager): Response
+    {
+        $mix = new VinylMix();
+        $mix->setTitle('Do you Remember... Phil Collins?!');
+        $mix->setDescription('A pure mix of drummers turned singers!');
+        $genres = ['pop', 'rock'];
+        $mix->setGenre($genres[array_rand($genres)]);
+        $mix->setTrackCount(rand(5, 20));
+        $mix->setVotes(rand(-50, 50));
+        $entityManager->persist($mix);
+        $entityManager->flush();
+        return new Response(sprintf(
+            'Mix %d is %d tracks of pure 80\'s heaven',
+            $mix->getId(),
+            $mix->getTrackCount()
+        ));
+    }
+}
+
+class VinylMixRepository extends ServiceEntityRepository
+{
+// ... lines 19 - 20
+        parent::__construct($registry, VinylMix::class);
+    }
+    public function add(VinylMix $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    public function remove(VinylMix $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    * @return VinylMix[] Returns an array of VinylMix objects
+    */
+   public function findAllOrderedByVotes(): array
+   {
+       return $this->createQueryBuilder('mix')
+           ->orderBy('mix.votes', 'DESC')
+           ->getQuery()
+           ->getResult()
+       ;
+   }
     public function new(): Response
     {
         $mix = new VinylMix();
@@ -44,26 +96,10 @@ class VinylMixRepository extends ServiceEntityRepository
      /**
      * @return VinylMix[] Returns an array of VinylMix objects
      */
-    public function findAllOrderedByVotes(): array
-    {
     
-        public function findAllOrderedByVotes(): array
-        {
-            return $this->createQueryBuilder('mix')
+        
     
-        }
-        public function findAllOrderedByVotes(): array
-        {
-            return $this->createQueryBuilder('mix')
-                ->orderBy('mix.votes', 'DESC')
-                public function findAllOrderedByVotes(): array
-    {
-        return $this->createQueryBuilder('mix')
-
-            ->getQuery()
-            ->getResult()
-        ;
-    }
+        
     public function findAllOrderedByVotes(string $genre = null): array
     {
 
