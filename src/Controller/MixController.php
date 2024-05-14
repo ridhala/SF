@@ -31,10 +31,13 @@ class MixController extends AbstractController
     }
     
     }
-    #[Route('/mix/{id}')]
+    #[Route('/mix/{id}', name: 'app_mix_show')]
     public function show($id, VinylMixRepository $mixRepository): Response
     {
         $mix = $mixRepository->find($id);
+        if (!$mix) {
+            throw $this->createNotFoundException('Mix not found');
+        }
         return $this->render('mix/show.html.twig', [
             'mix' => $mix,
         ]);
@@ -43,7 +46,7 @@ class MixController extends AbstractController
 
 class VinylMixRepository extends ServiceEntityRepository
 {
-// ... lines 19 - 20
+
         parent::__construct($registry, VinylMix::class);
     }
     public function add(VinylMix $entity, bool $flush = false): void
@@ -53,6 +56,7 @@ class VinylMixRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
     public function remove(VinylMix $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -60,6 +64,7 @@ class VinylMixRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    
     * @return VinylMix[] Returns an array of VinylMix objects
     */
    public function findAllOrderedByVotes(): array
@@ -70,23 +75,25 @@ class VinylMixRepository extends ServiceEntityRepository
            ->getResult()
        ;
    }
-    public function new(): Response
-    {
-        $mix = new VinylMix();
-        $mix->setTitle('Do you Remember... Phil Collins?!');
-        $mix->setDescription('A pure mix of drummers turned singers!');
-        $mix->setGenre('pop');
-        $mix->setTrackCount(rand(5, 20));
-        $mix->setVotes(rand(-50, 50));
-        dd($mix);
-    }
-    public function new(EntityManagerInterface $entityManager): Response
-    {
-
-        $genres = ['pop', 'rock'];
-        $mix->setGenre($genres[array_rand($genres)]);
-
-    }
+   public function new(EntityManagerInterface $entityManager): Response
+   {
+       $mix = new VinylMix();
+       $mix->setTitle('Do you Remember... Phil Collins?!');
+       $mix->setDescription('A pure mix of drummers turned singers!');
+       $genres = ['pop', 'rock'];
+       $mix->setGenre($genres[array_rand($genres)]);
+       $mix->setTrackCount(rand(5, 20));
+       $mix->setVotes(rand(-50, 50));
+       $entityManager->persist($mix);
+       $entityManager->flush();
+       return new Response(sprintf(
+           'Mix %d is %d tracks of pure 80\'s heaven',
+           $mix->getId(),
+           $mix->getTrackCount()
+       ));
+   }
+   #[Route('/mix/{id}', name: 'app_mix_show')]
+    
 }
 class VinylMixRepository extends ServiceEntityRepository
 {
@@ -104,22 +111,9 @@ class VinylMixRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-     /**
-     * @return VinylMix[] Returns an array of VinylMix objects
-     */
+     
     
-        
     
-        
-    public function findAllOrderedByVotes(string $genre = null): array
-    {
-
-        if ($genre) {
-            $queryBuilder->andWhere('mix.genre = :genre')
-                ->setParameter('genre', $genre);
-        }
-        class VinylMixRepository extends ServiceEntityRepository
-{
 
     private function addOrderByVotesQueryBuilder(QueryBuilder $queryBuilder = null): QueryBuilder
     {
@@ -143,18 +137,18 @@ public function findAllOrderedByVotes(string $genre = null): array
 }
 private function addOrderByVotesQueryBuilder(QueryBuilder $queryBuilder = null): QueryBuilder
 {
-// ... lines 63 - 64
+
     return $queryBuilder->orderBy('mix.votes', 'DESC');
 }
-//    public function findOneBySomeField($value): ?VinylMix
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+  public function findOneBySomeField($value): ?VinylMix
+   {
+        return $this->createQueryBuilder('v')
+          ->andWhere('v.exampleField = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+           ->getOneOrNullResult()
+       ;
+   }
 }
     }
     #[Route('/browse/{slug}', name: 'app_browse')]
